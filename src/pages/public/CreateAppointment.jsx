@@ -1,4 +1,4 @@
-import BookingForm from "../../components/common/BookingForm";
+import BookingForm from "../../components/BookingForm";
 import UserLayout from "../../layouts/UserLayout";
 const CreateAppointment = function () {
     return (

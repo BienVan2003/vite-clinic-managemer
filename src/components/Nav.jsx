@@ -1,6 +1,9 @@
+import { Dropdown } from 'flowbite-react';
 import { useState } from "react";
 import { IoClose, IoLogoIonic, IoMenu } from "react-icons/io5";
-import { NavLink } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
+
 const Nav = () => {
     let Links = [
         { name: "Trang chủ", link: "/" },
@@ -9,6 +12,14 @@ const Nav = () => {
         { name: "Liên hệ", link: "/contact" },
     ];
     let [open, setOpen] = useState(false);
+
+    const navigate = useNavigate();
+    const handleLogout = () => {
+        localStorage.removeItem("accessToken")
+        localStorage.removeItem("username");
+        navigate("/");
+        toast.success("Đăng xuất thành công!");
+    }
     return (
         <div className="shadow-md w-full sticky top-0 left-0">
             <div className="md:flex items-center justify-between bg-white py-4 md:px-10 px-7">
@@ -42,8 +53,16 @@ const Nav = () => {
                             </NavLink>
                         </li>
                     ))}
-                    <NavLink to='/login' className='bg-green-600 text-white py-2 px-6 rounded md:ml-8 hover:bg-green-400 
-    duration-500' >Đăng nhập</NavLink>
+                    <li className="md:ml-8 text-xl md:my-0 my-7">
+                        {localStorage.getItem("accessToken") ? (
+                            // Nếu localStorage có "accessToken"
+                            <Dropdown label={localStorage.getItem("username")} size="lg">
+                                <Dropdown.Item onClick={() => alert('Profile!')}>Profile</Dropdown.Item>
+                                <Dropdown.Item onClick={() => handleLogout()}>Đăng xuất</Dropdown.Item>
+                            </Dropdown>
+                        ) : (
+                            <NavLink to='/auth/login/patient' className='bg-green-600 text-white py-2 px-6 rounded hover:bg-green-400 duration-500'>Đăng nhập</NavLink>
+                        )}</li>
                 </ul>
             </div>
         </div>
