@@ -1,11 +1,11 @@
 import ServiceTable from '../../components/Tables/ServiceTable';
-import AdminLayout from "../../layouts/AdminLayout";
+import LayoutAdmin from "../../layouts/LayoutAdmin";
 const Service = function () {
 
   return (
-    <AdminLayout> 
-          <ServiceTable />
-    </AdminLayout>
+    <LayoutAdmin>
+      <ServiceTable />
+    </LayoutAdmin>
   );
 };
 

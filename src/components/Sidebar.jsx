@@ -5,7 +5,10 @@ import { FaChevronDown, FaUserDoctor } from "react-icons/fa6";
 import { GiHeartPlus, GiMedicines } from "react-icons/gi";
 import { MdMiscellaneousServices, MdOutlineSick, MdWorkHistory } from "react-icons/md";
 import { useNavigate } from 'react-router-dom';
+import { useState } from "react";
+
 const Sidebar = () => {
+  const [selectedItem, setSelectedItem] = useState(null);
   const navigate = useNavigate()
   function dropDown() {
     document.querySelector('#submenu').classList.toggle('hidden')
@@ -27,37 +30,37 @@ const Sidebar = () => {
         <hr className="my-2 text-gray-600" />
         <div>
 
-          <div onClick={() => navigate('/admin/appointment-schedule')} className="p-2.5 mt-2 flex items-center rounded-md px-4 duration-300 cursor-pointer  hover:bg-blue-600">
+          <div key={1} onClick={() => {navigate('/admin/appointment-management'); setSelectedItem(1)}} className={`${1 === selectedItem ? 'bg-blue-600' : 'hover:bg-blue-600'} p-2.5 mt-2 flex items-center rounded-md px-4 duration-300 cursor-pointer`}>
             <AiFillSchedule />
             <span className="ml-4 text-gray-200">Appoinment</span>
           </div>
-          <div onClick={() => navigate('/admin/clinic-management')} className="p-2.5 mt-2 flex items-center rounded-md px-4 duration-300 cursor-pointer  hover:bg-blue-600">
+          <div key={2} onClick={() => {navigate('/admin/clinic-management'); setSelectedItem(2)}} className={`${2 === selectedItem ? 'bg-blue-600' : 'hover:bg-blue-600'} p-2.5 mt-2 flex items-center rounded-md px-4 duration-300 cursor-pointer`}>
             <FaClinicMedical />
             <span className="ml-4 text-gray-200">Clinic</span>
           </div>
-          <div onClick={() => navigate('/admin/doctor-management')} className="p-2.5 mt-2 flex items-center rounded-md px-4 duration-300 cursor-pointer  hover:bg-blue-600">
+          <div key={3} onClick={() => {navigate('/admin/doctor-management'); setSelectedItem(3)}} className={`${3 === selectedItem ? 'bg-blue-600' : 'hover:bg-blue-600'} p-2.5 mt-2 flex items-center rounded-md px-4 duration-300 cursor-pointer`}>
             <FaUserDoctor />
             <span className="ml-4 text-gray-200">Doctor</span>
           </div>
           <hr className="my-4 text-gray-600" />
-          <div onClick={() => navigate('/admin/medicine-management')} className="p-2.5 mt-2 flex items-center rounded-md px-4 duration-300 cursor-pointer  hover:bg-blue-600">
+          <div key={4} onClick={() => {navigate('/admin/medicine-management'); setSelectedItem(4)}} className={`${4 === selectedItem ? 'bg-blue-600' : 'hover:bg-blue-600'} p-2.5 mt-2 flex items-center rounded-md px-4 duration-300 cursor-pointer`}>
             <GiMedicines />
             <span className="ml-4 text-gray-200">Medicine</span>
           </div>
-          <div onClick={() => navigate('/admin/patient-management')} className="p-2.5 mt-2 flex items-center rounded-md px-4 duration-300 cursor-pointer  hover:bg-blue-600">
+          <div key={5} onClick={() => {navigate('/admin/patient-management'); setSelectedItem(5)}} className={`${5 === selectedItem ? 'bg-blue-600' : 'hover:bg-blue-600'} p-2.5 mt-2 flex items-center rounded-md px-4 duration-300 cursor-pointer`}>
             <MdOutlineSick />
             <span className="ml-4 text-gray-200">Patient</span>
           </div>
-          <div onClick={() => navigate('/admin/prescription-management')} className="p-2.5 mt-2 flex items-center rounded-md px-4 duration-300 cursor-pointer  hover:bg-blue-600">
+          <div key={6} onClick={() => {navigate('/admin/prescription-management'); setSelectedItem(6)}} className={`${6 === selectedItem ? 'bg-blue-600' : 'hover:bg-blue-600'} p-2.5 mt-2 flex items-center rounded-md px-4 duration-300 cursor-pointer`}>
             <GiHeartPlus />
             <span className="ml-4 text-gray-200">Prescription</span>
           </div>
           <hr className="my-4 text-gray-600" />
-          <div onClick={() => navigate('/admin/service-management')} className="p-2.5 mt-2 flex items-center rounded-md px-4 duration-300 cursor-pointer  hover:bg-blue-600">
+          <div key={7} onClick={() => {navigate('/admin/service-management'); setSelectedItem(7)}} className={`${7 === selectedItem ? 'bg-blue-600' : 'hover:bg-blue-600'} p-2.5 mt-2 flex items-center rounded-md px-4 duration-300 cursor-pointer`}>
             <MdMiscellaneousServices />
             <span className="ml-4 text-gray-200">Service</span>
           </div>
-          <div onClick={() => navigate('/admin/shift')} className="p-2.5 mt-2 flex items-center rounded-md px-4 duration-300 cursor-pointer  hover:bg-blue-600">
+          <div key={8} onClick={() => {navigate('/admin/shift-management'); setSelectedItem(8)}} className={`${8 === selectedItem ? 'bg-blue-600' : 'hover:bg-blue-600'} p-2.5 mt-2 flex items-center rounded-md px-4 duration-300 cursor-pointer`}>
             <MdWorkHistory />
             <span className="ml-4 text-gray-200">Shift</span>
           </div>

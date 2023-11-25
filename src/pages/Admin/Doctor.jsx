@@ -1,12 +1,12 @@
-import AdminLayout from "../../layouts/AdminLayout";
+import LayoutAdmin from "../../layouts/LayoutAdmin";
 
 const Doctor = function () {
   return (
-    <AdminLayout>
+    <LayoutAdmin>
       <div className="">
         <h1 className="text-2xl font-semibold ">This is doctor</h1>
       </div>
-    </AdminLayout>
+    </LayoutAdmin>
   );
 };
 

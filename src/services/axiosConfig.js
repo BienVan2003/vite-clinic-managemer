@@ -8,10 +8,10 @@ const instance = axios.create({
 // Add a request interceptor
 instance.interceptors.request.use(function (config) {
     // Do something before request is sent
-    // gắn token vào header
-    let token = window.localStorage.getItem('accessToken') && JSON.parse(window.localStorage.getItem('accessToken'))?.token?.slice(1, -1)
-    config.headers = {
-        authorization: token ? `Bearer ${token}` : null
+    // Attach token to the header
+    let token = window.localStorage.getItem('accessToken')
+    if (token) {
+        config.headers.Authorization = `Bearer ${token}`;
     }
     return config;
 }, function (error) {
@@ -23,13 +23,14 @@ instance.interceptors.response.use(function (response) {
     // refresh token
     return response.data ? response.data : { statusCode: response.status };
 }, function (error) {
-    let res = {}
+    console.log('Error: ' + error);
+    let res = {};
     if (error.response) {
         res.data = error.response.data;
         res.status = error.response.status;
         res.headers = error.response.headers;
     } else if (error.request) {
-        console.log(error.request);
+        console.log('error.request: ' + error.request);
     } else {
         console.log('Error', error.message);
     }

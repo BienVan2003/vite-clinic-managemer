@@ -1,6 +1,6 @@
 import { Dropdown } from 'flowbite-react';
 import { useState } from "react";
-import { IoClose, IoLogoIonic, IoMenu } from "react-icons/io5";
+import { IoClose, IoMenu } from "react-icons/io5";
 import { NavLink, useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 
@@ -8,7 +8,6 @@ const Nav = () => {
     let Links = [
         { name: "Trang chủ", link: "/" },
         { name: "Đặt lịch hẹn", link: "/create-appointment" },
-        { name: "Tin tức", link: "/news" },
         { name: "Liên hệ", link: "/contact" },
     ];
     let [open, setOpen] = useState(false);
@@ -18,7 +17,8 @@ const Nav = () => {
         localStorage.removeItem("accessToken")
         localStorage.removeItem("username");
         navigate("/");
-        toast.success("Đăng xuất thành công!");
+        toast("Đăng xuất thành công", { position: "top-center" });
+
     }
     return (
         <div className="shadow-md w-full sticky top-0 left-0">
@@ -27,9 +27,9 @@ const Nav = () => {
                     className="font-bold text-2xl cursor-pointer flex items-center font-[Poppins] text-gray-800"
                 >
                     <span className="text-3xl text-indigo-600 mr-1 pt-2">
-                        <IoLogoIonic />
+                        <img src="../../public/logo.svg" alt="logo" />
                     </span>
-                    Biên-Hưng
+                    Hospital
                 </div>
                 </NavLink>
                 <div
@@ -40,7 +40,7 @@ const Nav = () => {
                 </div>
 
                 <ul
-                    className={`md:flex md:items-center md:pb-0 pb-12 absolute md:static bg-white md:z-auto z-[-1] left-0 w-full md:w-auto md:pl-0 pl-9 transition-all duration-500 ease-in ${open ? "top-16 " : "top-[-490px]"
+                    className={`shadow-md sm:shadow-none md:flex md:items-center md:pb-0 pb-12 absolute md:static bg-white md:z-auto z-[-1] left-0 w-full md:w-auto md:pl-0 pl-9 transition-all duration-500 ease-in ${open ? "top-16 " : "top-[-490px]"
                         }`}
                 >
                     {Links.map((link) => (
@@ -57,11 +57,13 @@ const Nav = () => {
                         {localStorage.getItem("accessToken") ? (
                             // Nếu localStorage có "accessToken"
                             <Dropdown label={localStorage.getItem("username")} size="lg">
-                                <Dropdown.Item onClick={() => alert('Profile!')}>Profile</Dropdown.Item>
+                                <Dropdown.Item onClick={() => navigate('/profile')}>Profile</Dropdown.Item>
+                                <Dropdown.Item onClick={() => navigate('/change-password')}>Đổi mật khẩu</Dropdown.Item>
+                                <Dropdown.Item onClick={() => navigate('/appointment-schedule')}>Lịch đặt hẹn</Dropdown.Item>
                                 <Dropdown.Item onClick={() => handleLogout()}>Đăng xuất</Dropdown.Item>
                             </Dropdown>
                         ) : (
-                            <NavLink to='/auth/login/patient' className='bg-green-600 text-white py-2 px-6 rounded hover:bg-green-400 duration-500'>Đăng nhập</NavLink>
+                            <NavLink to='/auth/login/patient' className='text-indigo-950 hover:text-indigo-400 duration-500'>Đăng nhập</NavLink>
                         )}</li>
                 </ul>
             </div>

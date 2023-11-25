@@ -1,13 +1,21 @@
-import axiosConfig from './axiosConfig'
+import axiosConfig from './axiosConfig';
 
-export const apiLogin = (username, password) => {
-    return axiosConfig.post("/api/auth/login/patient", {username, password});
+export const apiLoginPatient = (username, password) => {
+    return axiosConfig.post("/api/auth/login/patient", { username, password });
 }
 
-export const apiSignup = (username, name, password, email, phoneNumber) => {
-    return axiosConfig.post("/api/auth/signup", {username, name, password, email, phoneNumber});
+export const apiSignupPatient = (username, name, password, email, numberPhone) => {
+    return axiosConfig.post("/api/auth/signup", { username, name, password, email, numberPhone });
 }
 
-export const apiAdminLogin = (username, password) => {
-    return axiosConfig.post("/api/auth/login/admin", {username, password});
+export const apiLoginAdmin = (username, password) => {
+    return axiosConfig.post("/api/auth/login/admin", { username, password });
+}
+
+export const apiLoginDoctor = (username, password) => {
+    return axiosConfig.post("/api/auth/login/doctor", { username, password });
+}
+
+export const apiSignupDoctor = (username, password, name, email, numberPhone) => {
+    return axiosConfig.post("/api/auth/signup/doctor", { username, password, name, email, numberPhone});
 }
