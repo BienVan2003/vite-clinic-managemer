@@ -5,6 +5,7 @@ import { ToastContainer, toast } from 'react-toastify';
 import { apiAddClinic, apiClinicList, apiDeleteClinic, apiEditClinic, apiServiceList } from '../../../services';
 import './ClinicManagement.css';
 
+const user = JSON.parse(localStorage.getItem('user'))
 const ClinicManagement = function () {
   const [openModal, setOpenModal] = useState(false);
   const [openAddModal, setOpenAddModal] = useState(false);
@@ -49,61 +50,80 @@ const ClinicManagement = function () {
     })
   }
 
-  const handleAddService = () => {
-    if (object.idService == 0) {
-      toast.error('Vui lòng chọn khoa!')
-    } else {
-      const { id, ...addObject } = object;
-      console.log(id)
-      apiAddClinic(addObject)
-        .then((response) => {
-          // console.log(response)
-          toast.success(response.message);
-          setIsSubmitted(true);
-        })
-        .catch(error => toast.error("Thất bại! " + error));
-      closeModal();
-    }
+  const resetObject = () => {
+    setObject({
+      ...object,
+      name: '',
+      idService: 0,
+      clinicNumber: '',
+      phoneNumber: '',
+      status: 'EMPTY'
+    })
   }
 
-  const handleEditService = () => {
+  const handleAddService = async () => {
     if (object.idService == 0) {
-      toast.error('Vui lòng chọn khoa!')
-    } else {
+      toast.error('Vui lòng chọn khoa!', { position: 'bottom-left'})
+      return;
+    } 
+
+    const check = Object.keys(object).some(t => object[t] === "")
+    if(check) {
+      toast.error('Vui lòng nhập đủ thông tin!', { position: 'bottom-left'})
+      return;
+    }
+      const { id, ...addObject } = object;
+      const response = await apiAddClinic(addObject)
+      if(response.status) {
+        toast.success(response.message);
+          setIsSubmitted(true);
+          resetObject()
+          closeModal();
+      } else {
+        toast.error(response.message, { position: 'bottom-left'});
+      }
+      
+      
+    
+  }
+
+  const handleEditService = async () => {
+    if (object.idService == 0) {
+      toast.error('Vui lòng chọn khoa!', { position: 'bottom-left'})
+      return;
+    } 
+
+    const check = Object.keys(object).some(t => object[t] === "")
+    if(check) {
+      toast.error('Vui lòng nhập đủ thông tin!', { position: 'bottom-left'})
+      return;
+    }
+
       console.log(object)
       const { id, ...updatedObject } = object;
-      apiEditClinic(id, updatedObject)
-        .then((response) => {
-          console.log('response' + response)
-
-          toast.success(response.message);
+      const response = await apiEditClinic(id, updatedObject)
+      if (response.status) {
+        toast.success(response.message);
           setIsSubmitted(true);
-        })
-        .catch(error => {
-          // Xử lý khi có lỗi
-          if (error.response) {
-            // Nếu response có tồn tại
-            console.log('Data from server:', error.response.data);
-            console.log('Status code:', error.response.status);
-          } else if (error.request) {
-            // Nếu request được thực hiện nhưng không nhận được response
-            console.log('Request made but no response received');
-          } else {
-            // Lỗi trong quá trình thiết lập request
-            console.log('Error setting up the request:', error.message);
-          }
-        });
-      closeModal();
-    }
+          resetObject()
+          closeModal();
+      } else {
+        toast.error(response.message);
+      }
+        
+      
+    
   }
 
-  const handleDelete = () => {
-    apiDeleteClinic(object.id)
-      .then(res => {
-        toast.success(res.message);
+  const handleDelete = async () => {
+    const response = await apiDeleteClinic(object.id)
+    if(response.status) {
+        toast.success(response.message);
         setIsSubmitted(true);
-      })
-      .catch(error => toast.error("Thất bại! " + error));
+    } else {
+      toast.error(response.message);
+    }
+    
     setOpenDeleteModal(false);
   };
 
@@ -143,9 +163,9 @@ const ClinicManagement = function () {
       <section className="overflow-hidden py-4" style={{ background: "#6b7280" }}>
         <div className='w-11/12 m-auto justify-center items-center px-3'>
           <div className='my-2 flex-row justify-between items-center'>
-            <button onClick={() => { setOpenAddModal(true); setOpenModal(true); }} className="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded">
-              Add clinic
-            </button>
+            {user.role === 'ADMIN' && <button onClick={() => { setOpenAddModal(true); setOpenModal(true); }} className="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded">
+              Thêm phòng khám
+            </button>}
           </div>
         </div>
       </section>
@@ -158,23 +178,21 @@ const ClinicManagement = function () {
                 ID
               </th>
               <th >
-                Name
+                Tên phòng
               </th>
               <th >
-                ClinicNumber
+                Số phòng
               </th>
-              <th >
-                PhoneNumber
-              </th>
+             
               <th >
                 Khoa
               </th>
               <th >
-                Status
+                Trạng thái
               </th>
-              <th >
-                Actions
-              </th>
+              {user.role === 'ADMIN' && <th >
+                Thao tác
+              </th>}
             </tr>
           </thead>
           <tbody>
@@ -191,19 +209,17 @@ const ClinicManagement = function () {
                 <td className="p-3 text-sm text-gray-700 whitespace-nowrap">
                   {d.clinicNumber}
                 </td>
-                <td className="p-3 text-sm text-gray-700 whitespace-nowrap">
-                  {d.phoneNumber}
-                </td>
+              
                 <td className="p-3 text-sm text-gray-700 whitespace-nowrap">
                   {d.service.name}
                 </td>
                 <td className="p-3 text-sm text-gray-700 whitespace-nowrap">
                   {d.status}
                 </td>
-                <td className="p-3 text-sm text-gray-700 whitespace-nowrap">
-                  <button onClick={() => { setOpenEditModal(true); setOpenModal(true); handleObjectEdit(d); }} className="py-2 px-2 rounded-lg text-sm font-medium bg-teal-200 text-teal-800 hover:bg-teal-600">Edit</button>
-                  <button onClick={() => { setOpenDeleteModal(true); handleObjectEdit(d); }} className="ml-2 py-2 px-2 rounded-lg text-sm font-medium text-white bg-teal-600 hover:bg-teal-200">Del</button>
-                </td>
+                {user.role === 'ADMIN' && <td className="p-3 text-sm text-gray-700 whitespace-nowrap">
+                  <button onClick={() => { setOpenEditModal(true); setOpenModal(true); handleObjectEdit(d); }} className="py-2 px-2 rounded-lg text-sm font-medium bg-teal-200 text-teal-800 hover:bg-teal-600">Sửa</button>
+                  <button onClick={() => { setOpenDeleteModal(true); handleObjectEdit(d); }} className="ml-2 py-2 px-2 rounded-lg text-sm font-medium text-white bg-teal-600 hover:bg-teal-200">Xóa</button>
+                </td>}
               </tr>
             ))}
           </tbody>
@@ -216,10 +232,10 @@ const ClinicManagement = function () {
           <Modal.Header />
           <Modal.Body>
             <div className="space-y-6">
-              <h3 className="text-xl font-medium text-gray-900 dark:text-white">{openAddModal && 'Thêm phòng khám'}{openEditModal && 'Sữa thông tin phòng khám'}</h3>
+              <h3 className="text-xl font-medium text-gray-900 dark:text-white">{openAddModal && 'Thêm phòng khám'}{openEditModal && 'Sửa thông tin phòng khám'}</h3>
               <div>
                 <div className="mb-2 block">
-                  <Label htmlFor="name" value="Name" />
+                  <Label htmlFor="name" value="Tên phòng" />
                 </div>
                 <TextInput id="name" name='name' required
                   placeholder='Ví dụ: Phòng khám răng hàm mặt'
@@ -229,7 +245,7 @@ const ClinicManagement = function () {
               </div>
               <div>
                 <div className="mb-2 block">
-                  <Label htmlFor="clinicNumber" value="Clinic number" />
+                  <Label htmlFor="clinicNumber" value="Số phòng" />
                 </div>
                 <TextInput id="clinicNumber" name='clinicNumber' required
                   placeholder='Ví dụ: 8010'
@@ -239,7 +255,7 @@ const ClinicManagement = function () {
               </div>
               <div>
                 <div className="mb-2 block">
-                  <Label htmlFor="phoneNumber" value="Phone number" />
+                  <Label htmlFor="phoneNumber" value="Số điện thoại phòng" />
                 </div>
                 <TextInput id="phoneNumber" name='phoneNumber' required
                   placeholder='Ví dụ: 0432100200'
@@ -276,16 +292,16 @@ const ClinicManagement = function () {
                   onChange={handleInputChange}
                   required
                 >
-                  <option value='EMPTY'>EMPTY</option>
-                  <option value='BOOKING'>BOOKING</option>
-                  <option value='MAINTAIN'>MAINTAIN</option>
+                  <option value='EMPTY'>Trống</option>
+                  <option value='BOOKING'>Đã đặt</option>
+                  <option value='MAINTAIN'>Đang bảo trì</option>
                 </Select>
 
               </div>
               <div className="flex justify-center gap-56">
-                <Button onClick={checkHandleModal} color='success'>{openAddModal && 'Add'}{openEditModal && 'Edit'}</Button>
+                <Button onClick={checkHandleModal} color='success'>{openAddModal && 'Thêm'}{openEditModal && 'Lưu lại'}</Button>
                 <Button color="gray" onClick={closeModal}>
-                  Cancel
+                  Hủy
                 </Button>
               </div>
             </div>
@@ -300,14 +316,14 @@ const ClinicManagement = function () {
             <div className="text-center">
               <HiOutlineExclamationCircle className="mx-auto mb-4 h-14 w-14 text-gray-400 dark:text-gray-200" />
               <h3 className="mb-5 text-lg font-normal text-gray-500 dark:text-gray-400">
-                Bạn có muốn xóa {object.name} ?
+                Bạn có chắc là muốn xóa {object.name} ?
               </h3>
               <div className="flex justify-center gap-4">
                 <Button color="failure" onClick={() => handleDelete()}>
-                  {"Yes, I'm sure"}
+                  Có, tôi chắc chắn
                 </Button>
                 <Button color="gray" onClick={() => setOpenDeleteModal(false)}>
-                  No, cancel
+                  Không, hủy bỏ
                 </Button>
               </div>
             </div>

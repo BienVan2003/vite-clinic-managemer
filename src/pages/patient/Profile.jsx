@@ -1,29 +1,75 @@
-// import React from 'react';
+import React, { useState } from 'react';
+import { toast } from 'react-toastify';
+import { apiEditProfile } from '../../services';
+import { formatyyyyMMdd } from '../../utils/formatDateJs';
 
-
+const user = JSON.parse(localStorage.getItem('user'))
 const Profile = function () {
+    const [object, setObject] = useState({
+        name: user.name,
+        username: user.username,
+        gender: user.gender,
+        email: user.email,
+        numberPhone: user.numberPhone,
+        password: '',
+        dateOfBirth: formatyyyyMMdd(user.dateOfBirth) || null,
+        address: user.address || '',
+    })
+
+    const handleInputChange = (e) => {
+        const { name, value } = e.target
+        setObject({
+            ...object,
+            [name]: value
+        })
+    }
+
+    const handleSaveProfile = async () => {
+        const check = Object.keys(object).some(o => object[o] == "")
+        if(check) {
+            toast.error("Vui lòng nhập đủ thông tin", {position:"bottom-left"})
+            return;
+        }
+
+        if(dateOfBirth == null) {
+            toast.error("Vui lòng chọn ngày sinh", {position:"bottom-left"})
+            return;
+        }
+
+        console.log(object)
+
+        const response = await apiEditProfile(object)
+        if(response.status) {
+            toast.success("Cập nhật hồ sơ cá nhân thành công")
+            localStorage.setItem('user', JSON.stringify(response.data))
+            setTimeout(() => {
+                window.location.reload()
+            }, 2000)
+        } else {
+            toast.error(response.message)
+        }
+    }
     return (
-        <>
-            <div className="container mx-auto mt-8">
-                <div className="max-w-md mx-auto bg-white p-8 border rounded shadow-md">
-                    <h2 className="text-2xl font-semibold mb-6">Edit Profile</h2>
-                    <form action="#" method="post">
-                        {/* Name */}
+            <div className="container mx-auto pt-8 bg-slate-300 pb-6">
+                <div className="w-[800px] mx-auto bg-white p-8 border rounded shadow-md">
+                    <h2 className="text-2xl font-semibold mb-6">Chỉnh sửa profile</h2>
+                    <div className="grid md:grid-cols-2 grid-cols-1 gap-6">
                         <div className="mb-4">
                             <label
                                 htmlFor="name"
                                 className="block text-gray-600 text-sm font-medium mb-2"
                             >
-                                Name
+                                Họ và tên
                             </label>
                             <input
                                 type="text"
                                 id="name"
                                 name="name"
-                                className="form-input w-full"
+                                value={object.name}
+                                onChange={handleInputChange}
+                                className="form-input w-full rounded-md"
                             />
                         </div>
-                        {/* Username */}
                         <div className="mb-4">
                             <label
                                 htmlFor="username"
@@ -35,7 +81,9 @@ const Profile = function () {
                                 type="text"
                                 id="username"
                                 name="username"
-                                className="form-input w-full"
+                                value={object.username}
+                                onChange={handleInputChange}
+                                className="form-input w-full rounded-md"
                             />
                         </div>
                         {/* Gender */}
@@ -44,12 +92,14 @@ const Profile = function () {
                                 htmlFor="gender"
                                 className="block text-gray-600 text-sm font-medium mb-2"
                             >
-                                Gender
+                                Giới tính
                             </label>
-                            <select id="gender" name="gender" className="form-select w-full">
-                                <option value="male">Male</option>
-                                <option value="female">Female</option>
-                                <option value="other">Other</option>
+                            <select id="gender" name="gender" 
+                            value={object.gender}
+                            onChange={handleInputChange}
+                            className="form-select w-full">
+                                <option value="Nam">Nam</option>
+                                <option value="Nữ">Nữ</option>
                             </select>
                         </div>
                         {/* Email */}
@@ -64,7 +114,9 @@ const Profile = function () {
                                 type="email"
                                 id="email"
                                 name="email"
-                                className="form-input w-full"
+                                value={object.email}
+                                onChange={handleInputChange}
+                                className="form-input w-full rounded-md"
                             />
                         </div>
                         {/* NumberPhone */}
@@ -73,13 +125,15 @@ const Profile = function () {
                                 htmlFor="numberPhone"
                                 className="block text-gray-600 text-sm font-medium mb-2"
                             >
-                                Number Phone
+                                Số điện thoại
                             </label>
                             <input
                                 type="text"
                                 id="numberPhone"
                                 name="numberPhone"
-                                className="form-input w-full"
+                                value={object.numberPhone}
+                                onChange={handleInputChange}
+                                className="form-input w-full rounded-md"
                             />
                         </div>
                         {/* Password */}
@@ -88,13 +142,15 @@ const Profile = function () {
                                 htmlFor="password"
                                 className="block text-gray-600 text-sm font-medium mb-2"
                             >
-                                Password
+                                Mật khẩu
                             </label>
                             <input
                                 type="password"
                                 id="password"
                                 name="password"
-                                className="form-input w-full"
+                                value={object.password}
+                                onChange={handleInputChange}
+                                className="form-input w-full rounded-md"
                             />
                         </div>
                         {/* Date of Birth */}
@@ -103,13 +159,15 @@ const Profile = function () {
                                 htmlFor="dateOfBirth"
                                 className="block text-gray-600 text-sm font-medium mb-2"
                             >
-                                Date of Birth
+                                Ngày sinh
                             </label>
                             <input
                                 type="date"
                                 id="dateOfBirth"
                                 name="dateOfBirth"
-                                className="form-input w-full"
+                                value={object.dateOfBirth}
+                                onChange={handleInputChange}
+                                className="form-input w-full rounded-md"
                             />
                         </div>
                         {/* Address */}
@@ -118,28 +176,29 @@ const Profile = function () {
                                 htmlFor="address"
                                 className="block text-gray-600 text-sm font-medium mb-2"
                             >
-                                Address
+                                Địa chỉ
                             </label>
                             <textarea
                                 id="address"
                                 name="address"
-                                className="form-textarea w-full"
-                                defaultValue={""}
+                                value={object.address}
+                                onChange={handleInputChange}
+                                className="form-textarea w-full rounded-md"
                             />
                         </div>
                         <div className="mt-6">
                             <button
-                                type="submit"
-                                className="bg-blue-500 text-white px-4 py-2 rounded"
+                                type="button"
+                                onClick={handleSaveProfile}
+                                className="bg-green-700 text-white px-4 py-2 rounded"
                             >
-                                Save Changes
+                                Lưu lại
                             </button>
                         </div>
-                    </form>
+                    </div>
                 </div>
             </div>
 
-        </>
     );
 };
 

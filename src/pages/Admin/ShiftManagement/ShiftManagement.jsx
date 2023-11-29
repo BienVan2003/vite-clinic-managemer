@@ -3,8 +3,8 @@ import { useEffect, useState } from 'react';
 import { HiOutlineExclamationCircle } from 'react-icons/hi';
 import { toast, ToastContainer } from 'react-toastify';
 import { apiAddShift, apiDeleteShift, apiEditShift, apiShiftList } from '../../../services';
-// import './ServiceManagement.css';
 
+const user = JSON.parse(localStorage.getItem('user'))
 const ShiftManagement = function () {
     const [openModal, setOpenModal] = useState(false);
     const [openAddModal, setOpenAddModal] = useState(false);
@@ -37,55 +37,43 @@ const ShiftManagement = function () {
         })
     }
 
-    const handleAddService = () => {
+    const handleAddService = async () => {
         const { id, ...addObject } = object;
-        console.log(id)
-        apiAddShift(addObject)
-            .then((response) => {
-                // console.log(response)
-                toast.success(response.message);
-                setIsSubmitted(true);
-            })
-            .catch(error => toast.error("Thất bại! " + error));
-        closeModal();
+        const response = await apiAddShift(addObject)
+        if(response.status) {
+            toast.success(response.message || "Thêm ca làm việc thành công");
+            setIsSubmitted(true);
+            closeModal();
+        } else {
+            toast.error(response.message || "Thêm ca làm việc thất bại");
+        }
+           
     }
 
-    const handleEditService = () => {
-        console.log(object)
+    const handleEditService = async () => {
         const { id, ...updatedObject } = object;
-        apiEditShift(id, updatedObject)
-            .then((response) => {
-                console.log('response' + response)
-
-                toast.success(response.message);
-                setIsSubmitted(true);
-            })
-            .catch(error => {
-                // Xử lý khi có lỗi
-                if (error.response) {
-                    // Nếu response có tồn tại
-                    console.log('Data from server:', error.response.data);
-                    console.log('Status code:', error.response.status);
-                } else if (error.request) {
-                    // Nếu request được thực hiện nhưng không nhận được response
-                    console.log('Request made but no response received');
-                } else {
-                    // Lỗi trong quá trình thiết lập request
-                    console.log('Error setting up the request:', error.message);
-                }
-            });
-        closeModal();
+        const response = await apiEditShift(id, updatedObject)
+        if(response.status) {
+            toast.success(response.message || "Chỉnh sửa ca làm việc thành công");
+            setIsSubmitted(true);
+            closeModal();
+        } else {
+            toast.error(response.message || "Chỉnh sửa ca làm việc thất bại");
+        }
+            
 
     }
 
-    const handleDelete = () => {
-        apiDeleteShift(object.id)
-            .then(res => {
-                toast.success(res.message);
-                setIsSubmitted(true);
-            })
-            .catch(error => toast.error("Thất bại! " + error));
-        setOpenDeleteModal(false);
+    const handleDelete = async () => {
+        const response = await apiDeleteShift(object.id)
+        if(response.status) {
+            toast.success(response.message || "Xóa ca làm việc thành công");
+            setIsSubmitted(true);
+            setOpenDeleteModal(false);
+        } else {
+            toast.error(response.message || "Xóa ca làm việc thất bại");
+        }
+        
     };
 
     const fetchData = async () => {
@@ -121,9 +109,9 @@ const ShiftManagement = function () {
             <section className="overflow-hidden py-4" style={{ background: "#6b7280" }}>
                 <div className='w-11/12 m-auto justify-center items-center px-3'>
                     <div className='my-2 flex-row justify-between items-center'>
-                        <button onClick={() => { setOpenAddModal(true); setOpenModal(true); }} className="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded">
+                        {user.role === "ADMIN" && <button onClick={() => { setOpenAddModal(true); setOpenModal(true); }} className="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded">
                             Thêm ca
-                        </button>
+                        </button>}
                     </div>
                 </div>
             </section>
@@ -136,17 +124,17 @@ const ShiftManagement = function () {
                                 ID
                             </th>
                             <th >
-                                Shift Name
+                                Ca khám
                             </th>
                             <th >
-                                Start Time
+                                Giờ bắt đầu
                             </th>
                             <th >
-                                End Time
+                                Giờ kết thúc
                             </th>
-                            <th >
-                                Actions
-                            </th>
+                            {user.role === "ADMIN" && <th >
+                                Thao tác
+                            </th>}
                         </tr>
                     </thead>
                     <tbody>
@@ -166,10 +154,10 @@ const ShiftManagement = function () {
                                 <td className="p-3 text-sm text-gray-700 whitespace-nowrap">
                                     {o.endTime}
                                 </td>
-                                <td className="p-3 text-sm text-gray-700 whitespace-nowrap">
-                                    <button onClick={() => { setOpenEditModal(true); setOpenModal(true); handleObjectEdit(o); }} className="py-2 px-2 rounded-lg text-sm font-medium bg-teal-200 text-teal-800 hover:bg-teal-600">Edit</button>
-                                    <button onClick={() => { setOpenDeleteModal(true); handleObjectEdit(o); }} className="ml-2 py-2 px-2 rounded-lg text-sm font-medium text-white bg-teal-600 hover:bg-teal-200">Del</button>
-                                </td>
+                                {user.role === 'ADMIN' && <td className="p-3 text-sm text-gray-700 whitespace-nowrap">
+                                    <button onClick={() => { setOpenEditModal(true); setOpenModal(true); handleObjectEdit(o); }} className="py-2 px-2 rounded-lg text-sm font-medium bg-teal-200 text-teal-800 hover:bg-teal-600">Sửa</button>
+                                    <button onClick={() => { setOpenDeleteModal(true); handleObjectEdit(o); }} className="ml-2 py-2 px-2 rounded-lg text-sm font-medium text-white bg-teal-600 hover:bg-teal-200">Xóa</button>
+                                </td>}
                             </tr>
                         ))}
                     </tbody>
@@ -181,10 +169,10 @@ const ShiftManagement = function () {
                     <Modal.Header />
                     <Modal.Body>
                         <div className="space-y-6">
-                            <h3 className="text-xl font-medium text-gray-900 dark:text-white">{openAddModal && 'Thêm ca'}{openEditModal && 'Sữa thông tin ca'}</h3>
+                            <h3 className="text-xl font-medium text-gray-900 dark:text-white">{openAddModal && 'Thêm ca'}{openEditModal && 'Sửa thông tin ca'}</h3>
                             <div>
                                 <div className="mb-2 block">
-                                    <Label htmlFor="shiftName" value="Shift Name" />
+                                    <Label htmlFor="shiftName" value="Ca" />
                                 </div>
                                 <TextInput id="shiftName" name='shiftName' required
                                     value={object.shiftName}
@@ -193,7 +181,7 @@ const ShiftManagement = function () {
                             </div>
                             <div>
                                 <div className="mb-2 block">
-                                    <Label htmlFor="startTime" value="Start Time" />
+                                    <Label htmlFor="startTime" value="Giờ bắt đầu" />
                                 </div>
                                 <TextInput id="startTime" name='startTime' required
                                     type='time'
@@ -203,7 +191,7 @@ const ShiftManagement = function () {
                             </div>
                             <div>
                                 <div className="mb-2 block">
-                                    <Label htmlFor="endTime" value="End Time" />
+                                    <Label htmlFor="endTime" value="Giờ kết thúc" />
                                 </div>
                                 <TextInput id="endTime" name='endTime' required
                                     type='time'
@@ -212,9 +200,9 @@ const ShiftManagement = function () {
                                 />
                             </div>
                             <div className="flex justify-center gap-56">
-                                <Button onClick={checkHandleModal} color='success'>{openAddModal && 'Add'}{openEditModal && 'Edit'}</Button>
+                                <Button onClick={checkHandleModal} color='success'>{openAddModal && 'Thêm'}{openEditModal && 'Lưu lại'}</Button>
                                 <Button color="gray" onClick={closeModal}>
-                                    Cancel
+                                    Hủy
                                 </Button>
                             </div>
                         </div>
@@ -233,10 +221,10 @@ const ShiftManagement = function () {
                             </h3>
                             <div className="flex justify-center gap-4">
                                 <Button color="failure" onClick={() => handleDelete()}>
-                                    {"Yes, I'm sure"}
+                                    Có, tôi chắc chắn
                                 </Button>
                                 <Button color="gray" onClick={() => setOpenDeleteModal(false)}>
-                                    No, cancel
+                                    Không, hủy bỏ
                                 </Button>
                             </div>
                         </div>

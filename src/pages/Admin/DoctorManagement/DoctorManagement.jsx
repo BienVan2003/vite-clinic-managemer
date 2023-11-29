@@ -2,8 +2,11 @@ import { Button, Label, Modal, Select, TextInput } from 'flowbite-react';
 import { useEffect, useState } from 'react';
 import { HiOutlineExclamationCircle } from 'react-icons/hi';
 import { ToastContainer, toast } from 'react-toastify';
-import { apiDeleteDoctor, apiDoctorList, apiEditDoctor, apiServiceList, apiSignupDoctor } from '../../../services';
+import { apiDoctorList, apiEditDoctor, apiLockDoctor, apiServiceList, apiSignupDoctor, apiUnlockDoctor } from '../../../services';
+import { apiSearchDoctor } from '../../../services/search';
+import { formatyyyyMMdd } from '../../../utils/formatDateJs';
 
+const user = JSON.parse(localStorage.getItem('user'))
 const DoctorManagement = function () {
     const [openModal, setOpenModal] = useState(false);
     const [openAddModal, setOpenAddModal] = useState(false);
@@ -11,9 +14,11 @@ const DoctorManagement = function () {
     const [openEditModal, setOpenEditModal] = useState(false);
     const [isSubmitted, setIsSubmitted] = useState(false);
     const [data, setData] = useState([]);
+    const [searchInput, setSearchInput] = useState('')
     const [services, setServices] = useState([]);
 
     const [object, setObject] = useState({
+        id: -1,
         serviceId: 0,
         name: '',
         username: '',
@@ -43,84 +48,125 @@ const DoctorManagement = function () {
     };
     const handleObjectEdit = (o) => {
         setObject({
-            serviceId: o.serviceId,
+            ...object,
+            id: o.id,
+            serviceId: o.service.id,
             name: o.name,
             username: o.username,
+            password: "########",
             gender: o.gender,
             email: o.email,
             numberPhone: o.numberPhone,
-            dateOfBirth: o.dateOfBirth,
+            dateOfBirth: formatyyyyMMdd(o.dateOfBirth),
             address: o.address,
+            role: 'DOCTOR',
+            active: o.active
+        })
+
+    }
+
+    const resetObject = () => {
+        setObject({
+            ...object,
+            id: -1,
+            serviceId: 0,
+            name: '',
+            username: '',
+            gender: '',
+            email: '',
+            numberPhone: '',
+            password: '',
+            dateOfBirth: '',
+            address: '',
             role: 'DOCTOR'
         })
     }
 
-    const handleAddService = () => {
-        if (object.idService == 0) {
-            toast.error('Vui lòng chọn khoa!')
-        } else {
-            apiSignupDoctor(object.username, object.name, object.password, object.email, object.phoneNumber)
-                .then((response) => {
-                    // console.log(response)
-                    toast.success(response.message);
-                    setIsSubmitted(true);
-                })
-                .catch(error => toast.error("Thất bại! " + error));
-            closeModal();
+    const handleAddService = async () => {
+        const check = Object.keys(object).some(key => 
+            object[key] === ''
+        );
+
+        if(check) {
+            toast.error("Vui lòng nhập đủ thông tin", { position: "bottom-left" })
+            return;
         }
+
+        if (object.serviceId == 0) {
+            toast.error('Vui lòng chọn khoa!', { position: "bottom-left" })
+            return;
+        }
+
+
+        const response = await apiSignupDoctor(object) 
+        if(response.status) {
+            toast.success(response.message || "Thêm tài khoản bác sĩ thành công");
+            resetObject()
+            closeModal();
+            setIsSubmitted(true);
+        } else {
+            toast.error(response.message);
+        }
+
+        
     }
 
-    const handleEditService = () => {
-        if (object.idService == 0) {
+    const handleEditService = async () => {
+        if (object.serviceId == 0) {
             toast.error('Vui lòng chọn khoa!')
         } else {
             console.log(object)
             const { id, ...updatedObject } = object;
-            apiEditDoctor(id, updatedObject)
-                .then((response) => {
-                    console.log('response' + response)
-
-                    toast.success(response.message);
-                    setIsSubmitted(true);
-                })
-                .catch(error => {
-                    // Xử lý khi có lỗi
-                    if (error.response) {
-                        // Nếu response có tồn tại
-                        console.log('Data from server:', error.response.data);
-                        console.log('Status code:', error.response.status);
-                    } else if (error.request) {
-                        // Nếu request được thực hiện nhưng không nhận được response
-                        console.log('Request made but no response received');
-                    } else {
-                        // Lỗi trong quá trình thiết lập request
-                        console.log('Error setting up the request:', error.message);
-                    }
-                });
-            closeModal();
+            const response = await apiEditDoctor(id, updatedObject)
+            if(response.status) {
+                toast.success(response.message || "Chỉnh sửa thông tin bác sĩ thành công");
+                resetObject()
+                closeModal();
+                setIsSubmitted(true);
+            } else {
+                toast.error("Vui lòng kiểm tra lại thông tin");
+            }
         }
     }
 
-    const handleDelete = () => {
-        apiDeleteDoctor(object.id)
-            .then(res => {
-                toast.success(res.message);
-                setIsSubmitted(true);
-            })
-            .catch(error => toast.error("Thất bại! " + error));
+    const handleLock = async () => {
+        const response = await apiLockDoctor(object.id)
+        if(response.status) {
+            toast.success(response.message);
+            setIsSubmitted(true);
+        } else {
+            toast.error(response.message)
+        }
+          
+        setOpenDeleteModal(false);
+    };
+
+    const handleUnlock = async () => {
+        const res = await apiUnlockDoctor(object.id)
+
+        if(res.status) {
+            toast.success(res.message);
+            setIsSubmitted(true);
+        } else {
+            toast.error(res.message)
+        }
+          
         setOpenDeleteModal(false);
     };
 
     const fetchData = async () => {
         // API call
-        const response = await apiDoctorList();
-        setData(response.data)
+        fetchDoctors()
         const serviceList = await apiServiceList();
         setServices(serviceList.data)
     };
 
+    const fetchDoctors = async () => {
+        const response = await apiDoctorList();
+        setData(response.data)
+    }
+
     useEffect(() => {
-        // just call api only once
         return () => {
             setIsSubmitted(false);
             fetchData();
@@ -141,15 +187,35 @@ const DoctorManagement = function () {
         }
     }
 
+    const handleSearch = async (e) => {
+        const value = e.target.value
+        setSearchInput(value)
+        if(value.length >= 2) {
+            const response = await apiSearchDoctor(value)
+            const searchResult = response.data
+            setData(searchResult)
+        } else fetchDoctors()
+    }
+
     return (
         <div className="shadow-2xl rounded-xl mt-12 overflow-hidden">
             <ToastContainer />
             <section className="overflow-hidden py-4" style={{ background: "#6b7280" }}>
-                <div className='w-11/12 m-auto justify-center items-center px-3'>
+                <div className='flex justify-between items-center px-3'>
                     <div className='my-2 flex-row justify-between items-center'>
-                        <button onClick={() => { setOpenAddModal(true); setOpenModal(true); }} className="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded">
+                        {user.role === "ADMIN" && <button onClick={() => { setOpenAddModal(true); setOpenModal(true); }} className="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded">
                             Thêm bác sĩ
-                        </button>
+                        </button>}
+                    </div>
+
+                    <div className='flex gap-2 items-center'>
+                        <Label htmlFor="search" className='text-white font-semibold' value="Tìm kiếm bác sĩ" />
+                        <TextInput
+                            value={searchInput}
+                            onChange={handleSearch}
+                            id="search"
+                            placeholder='Nhập tên bác sĩ'
+                        />
                     </div>
                 </div>
             </section>
@@ -162,32 +228,23 @@ const DoctorManagement = function () {
                                 ID
                             </th>
                             <th >
-                                Thuộc khoa
+                                Khoa khám
                             </th>
                             <th >
-                                Name
+                                Họ và tên
                             </th>
                             <th >
-                                Username
+                                Giới tính
                             </th>
                             <th >
-                                Gender
+                                Số điện thoại
                             </th>
                             <th >
-                                Email
+                                Trạng thái
                             </th>
-                            <th >
-                                Number Phone
-                            </th>
-                            <th >
-                                Day Of Birth
-                            </th>
-                            <th >
-                                Address
-                            </th>
-                            <th >
-                                Actions
-                            </th>
+                           {user.role === "ADMIN" && <th >
+                                Thao tác
+                            </th>}
                         </tr>
                     </thead>
                     <tbody>
@@ -204,29 +261,25 @@ const DoctorManagement = function () {
                                 <td className="p-3 text-sm text-gray-700 whitespace-nowrap">
                                     {o.name}
                                 </td>
-                                <td className="p-3 text-sm text-gray-700 whitespace-nowrap">
-                                    {o.username}
-                                </td>
+                              
                                 <td className="p-3 text-sm text-gray-700 whitespace-nowrap">
                                     {o.gender}
                                 </td>
-                                <td className="p-3 text-sm text-gray-700 whitespace-nowrap">
-                                    {o.email}
-                                </td>
+                             
                                 <td className="p-3 text-sm text-gray-700 whitespace-nowrap">
                                     {o.numberPhone}
                                 </td>
+                             
                                 <td className="p-3 text-sm text-gray-700 whitespace-nowrap">
-                                    {o.dateOfBirth}
-                                </td>
-                                <td className="p-3 text-sm text-gray-700 whitespace-nowrap">
-                                    {o.address}
+                                    {o.active ? "Đang hoạt động" : "Đã khóa"}
                                 </td>
 
-                                <td className="p-3 text-sm text-gray-700 whitespace-nowrap">
-                                    <button onClick={() => { setOpenEditModal(true); setOpenModal(true); handleObjectEdit(o); }} className="py-2 px-2 rounded-lg text-sm font-medium bg-teal-200 text-teal-800 hover:bg-teal-600">Edit</button>
-                                    <button onClick={() => { setOpenDeleteModal(true); handleObjectEdit(o); }} className="ml-2 py-2 px-2 rounded-lg text-sm font-medium text-white bg-teal-600 hover:bg-teal-200">Del</button>
-                                </td>
+                                {user.role === "ADMIN" && <td className="p-3 text-sm text-gray-700 whitespace-nowrap">
+                                    <button onClick={() => { setOpenEditModal(true); setOpenModal(true); handleObjectEdit(o); }} className="py-2 px-2 rounded-lg text-sm font-medium bg-teal-200 text-teal-800 hover:bg-teal-600">Sửa</button>
+                                    {o.active ? <button onClick={() => { setOpenDeleteModal(true); handleObjectEdit(o); }} className="ml-2 py-2 px-2 rounded-lg text-sm font-medium text-white bg-teal-600 hover:bg-teal-200">Khóa</button>
+                                        : <button onClick={() => { setOpenDeleteModal(true); handleObjectEdit(o); }} className="ml-2 py-2 px-2 rounded-lg text-sm font-medium text-white bg-teal-600 hover:bg-teal-200">Mở khóa</button>
+                                    }
+                                </td>}
                             </tr>
                         ))}
                     </tbody>
@@ -239,7 +292,7 @@ const DoctorManagement = function () {
                     <Modal.Header />
                     <Modal.Body>
                         <div className="space-y-6">
-                            <h3 className="text-xl font-medium text-gray-900 dark:text-white">{openAddModal && 'Thêm bác sĩ'}{openEditModal && 'Sữa thông tin bác sĩ'}</h3>
+                            <h3 className="text-xl font-medium text-gray-900 dark:text-white">{openAddModal && 'Thêm bác sĩ'}{openEditModal && 'Chỉnh sửa thông tin bác sĩ'}</h3>
                             <div>
                                 <div className="mb-2 block">
                                     <Label htmlFor="username" value="Username" />
@@ -260,7 +313,7 @@ const DoctorManagement = function () {
                                     onChange={handleInputChange}
                                 />
                             </div>
-                            <div>
+                            {!openEditModal && <div>
                                 <div className="mb-2 block">
                                     <Label htmlFor="password" value="Password" />
                                 </div>
@@ -268,8 +321,9 @@ const DoctorManagement = function () {
                                     type='password'
                                     value={object.password}
                                     onChange={handleInputChange}
+
                                 />
-                            </div>
+                            </div>}
                             <div>
                                 <div className="mb-2 block">
                                     <Label htmlFor="email" value="Email" />
@@ -290,7 +344,7 @@ const DoctorManagement = function () {
                                     onChange={handleInputChange}
                                 />
                             </div>
-                            {openEditModal &&
+                            
                                 <div>
                                     <div className="mb-2 block">
                                         <Label htmlFor="serviceId" value="Thuộc khoa" />
@@ -310,8 +364,8 @@ const DoctorManagement = function () {
                                         ))}
                                     </Select>
                                 </div>
-                            }
-                            {openEditModal &&
+                            
+                            
                                 <div className="flex flex-wrap">
                                     <div className="flex items-center me-4">
                                         <input
@@ -348,8 +402,8 @@ const DoctorManagement = function () {
                                         </label>
                                     </div>
                                 </div>
-                            }
-                            {openEditModal &&
+                            
+                            
                                 <div>
                                     <div className="mb-2 block">
                                         <Label htmlFor="dateOfBirth" value="Date Of Birth" />
@@ -360,8 +414,8 @@ const DoctorManagement = function () {
                                         onChange={handleInputChange}
                                     />
                                 </div>
-                            }
-                            {openEditModal &&
+                            
+                            
                                 <div>
                                     <div className="mb-2 block">
                                         <Label htmlFor="address" value="Address" />
@@ -371,11 +425,11 @@ const DoctorManagement = function () {
                                         onChange={handleInputChange}
                                     />
                                 </div>
-                            }
+                            
                             <div className="flex justify-center gap-56">
-                                <Button onClick={checkHandleModal} color='success'>{openAddModal && 'Add'}{openEditModal && 'Edit'}</Button>
+                                <Button onClick={checkHandleModal} color='success'>{openAddModal && 'Tạo mới'}{openEditModal && 'Lưu lại'}</Button>
                                 <Button color="gray" onClick={closeModal}>
-                                    Cancel
+                                    Hủy
                                 </Button>
                             </div>
                         </div>
@@ -390,14 +444,16 @@ const DoctorManagement = function () {
                         <div className="text-center">
                             <HiOutlineExclamationCircle className="mx-auto mb-4 h-14 w-14 text-gray-400 dark:text-gray-200" />
                             <h3 className="mb-5 text-lg font-normal text-gray-500 dark:text-gray-400">
-                                Bạn có muốn xóa {object.name} ?
+                                Bạn có chắc là muốn {object.active ? 'khóa' : 'mở khóa'} tài khoản bác sĩ {object.name} ?
                             </h3>
                             <div className="flex justify-center gap-4">
-                                <Button color="failure" onClick={() => handleDelete()}>
-                                    {"Yes, I'm sure"}
+                                <Button color="failure" onClick={() => {
+                                    object.active ? handleLock() : handleUnlock()
+                                }}>
+                                    Có, tôi chắc chắn
                                 </Button>
                                 <Button color="gray" onClick={() => setOpenDeleteModal(false)}>
-                                    No, cancel
+                                    Không, hủy bỏ
                                 </Button>
                             </div>
                         </div>

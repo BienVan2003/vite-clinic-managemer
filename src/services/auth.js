@@ -16,6 +16,6 @@ export const apiLoginDoctor = (username, password) => {
     return axiosConfig.post("/api/auth/login/doctor", { username, password });
 }
 
-export const apiSignupDoctor = (username, password, name, email, numberPhone) => {
-    return axiosConfig.post("/api/auth/signup/doctor", { username, password, name, email, numberPhone});
+export const apiSignupDoctor = (object) => {
+    return axiosConfig.post("/api/auth/signup/doctor", object);
 }

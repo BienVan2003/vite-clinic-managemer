@@ -5,14 +5,16 @@ import Footer from '../components/Footer';
 import Nav from '../components/Nav';
 
 function LayoutPatient() {
-  return (
-    <div>
-      <Nav />
-      <Outlet />
-      <Footer />
-      <ToastContainer />
-    </div>
-  );
+    return (
+      <div className="w-full">
+        <Nav />
+        <div className="w-full h-scree">
+            <Outlet />
+           <Footer />
+        </div>
+        <ToastContainer />
+      </div>
+    );
 }
 
 export default LayoutPatient;

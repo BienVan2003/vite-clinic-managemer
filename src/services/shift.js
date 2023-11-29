@@ -4,6 +4,10 @@ export const apiShiftList = () => {
     return axiosConfig.get("/api/shift");
 }
 
+export const apiAvailableShiftList = (params) => {
+    return axiosConfig.get(`/api/shift/available?doctorID=${params.doctorID}&date=${params.date}`);
+}
+
 export const apiGetShiftId = (id) => {
     return axiosConfig.get(`/api/shift/${id}`);
 }

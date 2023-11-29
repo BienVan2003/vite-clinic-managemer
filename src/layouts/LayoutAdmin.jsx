@@ -6,7 +6,7 @@ function LayoutAdmin() {
   return (
     <div className="flex">
       <Sidebar />
-      <div className="p-4 flex-1">
+      <div className="p-4 flex-1 h-screen overflow-scroll">
         <Outlet />
       </div>
     </div>

@@ -58,90 +58,85 @@ function LoginPatient() {
             return;
         }
         setLoadingAPI(true);
-        let res = await apiLoginPatient(username, password);
+        let response = await apiLoginPatient(username, password);
 
-        if (res && res.accessToken) {
-            localStorage.setItem("accessToken", res.accessToken);
-            localStorage.setItem("username", username);
-            localStorage.setItem("role", "PATIENT");
-            localStorage.setItem('expireTime', res.expireTime);
-            toast.success("Đăng nhập thành công!");
-            // Đợi một chút trước khi chuyển hướng
-            await new Promise((resolve) => setTimeout(resolve, 1500));
+        if (response.user) {
+            localStorage.setItem("accessToken", response.accessToken);
+            localStorage.setItem("user", JSON.stringify(response.user));
+            toast.success("Đăng nhập thành công");
+            await new Promise((resolve) => setTimeout(resolve, 500));
             navigate("/");
-        } else if (res && res.status === 400) {
-            toast.error(res.data.message);
+        } else {
+            toast.error(response.message || "Đăng nhập thất bại");
         }
+        
         setLoadingAPI(false);
     }
 
     return (
-        <>
-            <div className="flex justify-center items-center h-screen bg-slate-300">
-                <div className="w-96 p-6 shadow-lg bg-white rounded-md">
-                    <h1 className="text-3xl block text-center font-semibold">
-                        <i className="fa-solid fa-user" /> Đăng nhập
-                    </h1>
-                    <hr className="mt-3" />
-                    <div className="mt-3">
 
-                        <label htmlFor="username" className="block text-base mb-2">
-                            Username
-                        </label>
-                        {errors.username && <div style={{ color: 'red' }}>{errors.username}</div>}
-                        <input
-                            type="text"
-                            id="username"
-                            name="username"
-                            className="border w-full text-base px-2 py-1 focus:outline-none focus:ring-0 focus:border-gray-600"
-                            placeholder="Enter username"
-                            value={username}
-                            onChange={handleChange}
-                        />
-                    </div>
-                    <div className="mt-3">
-                        <label htmlFor="password" className="block text-base mb-2">
-                            Password
-                        </label>
-                        {errors.password && <div style={{ color: 'red' }}>{errors.password}</div>}
-                        <input
-                            type="password"
-                            id="password"
-                            name="password"
-                            className="border w-full text-base px-2 py-1 focus:outline-none focus:ring-0 focus:border-gray-600"
-                            placeholder="Enter password"
-                            value={password}
-                            onChange={handleChange}
-                        />
-                    </div>
-                    <div className="mt-3 flex justify-between items-center">
-                        <div>
-                            <input type="checkbox" />
-                            <label className="ml-4">Remember Me</label>
-                        </div>
-                        <div>
-                            <a href="#" className="text-indigo-800 font-semibold">
-                                Quên mật khẩu?
-                            </a>
-                        </div>
-                    </div>
-                    <div className="mt-5">
-                        <button
-                            disabled={loadingAPI || !(username && password)}
-                            onClick={() => handleLogin()}
-                            className={`${(loadingAPI || !(username && password)) ? 'hover:bg-transparent hover:text-green-700' : ''} border-2 border-green-700 bg-green-700 text-white py-1 w-full rounded-md font-semibold`}
-                        >
-                            {loadingAPI && <Spinner />}
-                            &nbsp;&nbsp;Login
-                        </button>
-                    </div>
-                    <div className="text-center mt-5">
-                        Bạn chưa có tài khoản?
-                        <Link className="text-sky-500" to={'/auth/signup/patient'}> Đăng ký</Link>
-                    </div>
+        <div className="w-[500px] p-6 shadow-lg bg-white rounded-md">
+            <h1 className="text-3xl block text-center font-semibold">
+                <i className="fa-solid fa-user" /> Đăng nhập cho người dùng
+            </h1>
+            <hr className="mt-3" />
+            <div className="mt-3">
+
+                <label htmlFor="username" className="block text-base mb-2">
+                    Tên người dùng
+                </label>
+
+                <input
+                    type="text"
+                    id="username"
+                    name="username"
+                    className="border w-full text-base px-2 py-1 focus:outline-none focus:ring-0 focus:border-gray-600"
+                    placeholder="Nhập tên người dùng"
+                    value={username}
+                    onChange={handleChange}
+                />
+                {errors.username && <div className='text-xs mt-1' style={{ color: 'red' }}>{errors.username}</div>}
+            </div>
+            <div className="mt-3">
+                <label htmlFor="password" className="block text-base mb-2">
+                    Mật khẩu
+                </label>
+
+                <input
+                    type="password"
+                    id="password"
+                    name="password"
+                    className="border w-full text-base px-2 py-1 focus:outline-none focus:ring-0 focus:border-gray-600"
+                    placeholder="Nhập mật khẩu"
+                    value={password}
+                    onChange={handleChange}
+                />
+                {errors.password && <div className='text-xs mt-1' style={{ color: 'red' }}>{errors.password}</div>}
+            </div>
+            <div className="mt-3 flex justify-between items-center">
+
+                <div>
+                    <a href="/forgot-password" className="text-indigo-800 font-semibold">
+                        Quên mật khẩu?
+                    </a>
                 </div>
             </div>
-        </>
+            <div className="mt-5">
+                <button
+                    disabled={loadingAPI || !(username && password)}
+                    onClick={() => handleLogin()}
+                    className={`${(loadingAPI || !(username && password)) ? 'hover:bg-transparent hover:text-green-700' : ''} border-2 border-green-700 bg-green-700 text-white py-1 w-full cursor-pointer rounded-md font-semibold`}
+                >
+                    {loadingAPI && <Spinner />}
+                    &nbsp;&nbsp;Đăng nhập
+                </button>
+            </div>
+            <div className="text-center mt-5">
+                Bạn chưa có tài khoản?
+                <Link className="text-sky-500" to={'/auth/signup/patient'}> Đăng ký</Link>
+            </div>
+        </div>
+
 
     );
 }
