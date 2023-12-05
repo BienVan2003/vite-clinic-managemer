@@ -46,7 +46,7 @@ const AppointmentsList = ({ appointments }) => {
                         <p className="text-gray-600">Khoa khám: {appointment.service.name}</p>
                         <div className=''>
                             <button onClick={() => { appointment.status === "PENDING" && handlePayment(appointment.id) }} className={`mt-2 ${appointment.status === "PENDING" ? 'bg-blue-500 hover:bg-blue-700' : '' || appointment.status === "SUCCESS" ? 'bg-green-500' : '' || appointment.status === "REJECT" ? 'bg-slate-500' : '' || appointment.status === "CANCEL" ? 'bg-red-500' : ''} text-white px-4 py-2 rounded`}>{appointment.status === "PENDING" && "Thanh toán ngay"}{appointment.status === "SUCCESS" && <span className='cursor-default'>Đã thanh toán</span>}{appointment.status === "REJECT" && "Từ chối"}{appointment.status === "CANCEL" && "Đã hủy"}</button>
-                            <button onClick={() => handleViewDetail(appointment)} className='ml-2 text-white px-4 py-2 rounded bg-teal-600'>Xem thông tin khám</button>
+                            {appointment.patientRecord != null && <button onClick={() => handleViewDetail(appointment)} className='ml-2 text-white px-4 py-2 rounded bg-teal-600'>Xem thông tin khám</button>}
                         </div>
                     </div>
                 ))

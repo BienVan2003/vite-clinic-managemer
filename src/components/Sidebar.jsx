@@ -93,7 +93,7 @@ const Sidebar = () => {
           >
          
             <h1 onClick={handleLogout} className="cursor-pointer p-2 hover:bg-gray-700 rounded-md mt-1">
-              Logout
+              Đăng xuất
             </h1>
           </div>
         </div>

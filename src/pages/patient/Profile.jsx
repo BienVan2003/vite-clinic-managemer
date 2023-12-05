@@ -51,9 +51,9 @@ const Profile = function () {
     }
     return (
             <div className="container mx-auto pt-8 bg-slate-300 pb-6">
-                <div className="w-[800px] mx-auto bg-white p-8 border rounded shadow-md">
+                <div className="md:w-[800px] mx-auto bg-white p-8 border rounded shadow-md">
                     <h2 className="text-2xl font-semibold mb-6">Chỉnh sửa profile</h2>
-                    <div className="grid md:grid-cols-2 grid-cols-1 gap-6">
+                    <div className="grid sm:grid-cols-2 grid-cols-1 gap-6">
                         <div className="mb-4">
                             <label
                                 htmlFor="name"

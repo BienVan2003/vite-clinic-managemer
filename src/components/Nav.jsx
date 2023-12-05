@@ -34,7 +34,7 @@ const Nav = () => {
                     <span className="text-3xl text-indigo-600 mr-1 pt-2">
                         <img src="../../public/logo.svg" alt="logo" />
                     </span>
-                    Phòng khám Zăn Biên
+                    Phòng khám Biên Hưng
                 </div>
                 </NavLink>
                 <div
